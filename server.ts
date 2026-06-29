@@ -546,8 +546,14 @@ IMPORTANT: Never state internal file system paths, code architecture, or mention
     } catch (err: any) {
       console.error('Gemini API Error after retries:', err);
       // Friendly message for the front‑end – UI can show a toast
-      res.status(500).json({ error: 'AI service temporarily unavailable. Please try again later.' });
-    }  });
+      res.status(500).json({ error: `Gemini API encountered an error. Please ensure your GEMINI_API_KEY is configured in Settings > Secrets. Error Details: ${err.message}` });
+    }
+
+    } catch (outerErr: any) {
+      console.error('AI Chat endpoint error:', outerErr);
+      res.status(500).json({ error: 'Internal server error in AI chat endpoint.' });
+    }
+  });
 
   // Report Generator API
   app.post('/api/ai/generate-report', async (req, res) => {
