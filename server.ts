@@ -63,25 +63,20 @@ async function initDatabase() {
   }
 }
 
-async function startServer() {
-  // Ensure database is initialized before set paths
-  await initDatabase();
+const app = express();
 
-  const app = express();
-  const PORT = 3000;
+app.use(express.json());
+app.use('/assets', express.static(path.join(process.cwd(), 'assets')));
 
-  app.use(express.json());
-  app.use('/assets', express.static(path.join(process.cwd(), 'assets')));
-
-  // Initialize Gemini Client
-  const ai = new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY,
-    httpOptions: {
-      headers: {
-        'User-Agent': 'aistudio-build',
-      }
+// Initialize Gemini Client
+const ai = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY,
+  httpOptions: {
+    headers: {
+      'User-Agent': 'aistudio-build',
     }
-  });
+  }
+});
 
   // 1. Get entire state
   app.get('/api/wealth', async (req, res) => {
@@ -621,30 +616,52 @@ Style: Highly motivating, crisp formatting, executive review.`;
   // -----------------------------------------------------------------------------
   // VITE CLIENT MIDDLEWARE & ROUTING HANDLERS
   // -----------------------------------------------------------------------------
-  if (process.env.NODE_ENV !== 'production') {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-    app.use(vite.middlewares);
+  if (!process.env.VERCEL) {
+    if (process.env.NODE_ENV !== 'production') {
+      createViteServer({
+        server: { middlewareMode: true },
+        appType: 'spa',
+      }).then((vite) => {
+        app.use(vite.middlewares);
+
+        // Global error handler (registered as final middleware in dev)
+        app.use((err: any, req: any, res: any, next: any) => {
+          console.error(err);
+          res.status(500).json({ error: 'Server internal anomaly' });
+        });
+
+        const PORT = 3000;
+        app.listen(PORT, '0.0.0.0', () => {
+          console.log(`🚀 MILYARDER Financial Server running securely on http://localhost:${PORT}`);
+        });
+      });
+    } else {
+      const distPath = path.join(process.cwd(), 'dist');
+      app.use(express.static(distPath));
+      app.get('*', (req, res) => {
+        res.sendFile(path.join(distPath, 'index.html'));
+      });
+
+      // Global error handler
+      app.use((err: any, req: any, res: any, next: any) => {
+        console.error(err);
+        res.status(500).json({ error: 'Server internal anomaly' });
+      });
+
+      const PORT = 3000;
+      app.listen(PORT, '0.0.0.0', () => {
+        console.log(`🚀 MILYARDER Financial Server running securely on http://localhost:${PORT}`);
+      });
+    }
   } else {
-    const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
+    // Global error handler for serverless environment
+    app.use((err: any, req: any, res: any, next: any) => {
+      console.error(err);
+      res.status(500).json({ error: 'Server internal anomaly' });
     });
   }
 
-  // Global error handler
-  app.use((err: any, req: any, res: any, next: any) => {
-    console.error(err);
-    res.status(500).json({ error: 'Server internal anomaly' });
-  });
+  // Run DB seeding asynchronously in background
+  initDatabase();
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 MILYARDER Financial Server running securely on http://localhost:${PORT}`);
-  });
-}
-
-// Start full application
-startServer();
+  export default app;
