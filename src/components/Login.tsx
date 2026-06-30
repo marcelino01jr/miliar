@@ -100,7 +100,20 @@ export default function Login({ onLoginSuccess }: LoginProps) {
         }),
       });
 
-      const data = await response.json();
+      let data: any;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        if (text.includes('<!DOCTYPE html>') || text.includes('<html') || text.includes('A server error occurred')) {
+          throw new Error(
+            'Server backend mengembalikan error (HTML/Text). ' +
+            'Kemungkinan besar Environment Variables (SUPABASE_URL, SUPABASE_ANON_KEY) belum diset di dashboard Vercel Anda, atau server sedang cold-start/error.'
+          );
+        }
+        throw new Error(text || `Koneksi gagal dengan status ${response.status}`);
+      }
 
       if (!response.ok) {
         throw new Error(data.error || 'Terjadi kesalahan saat masuk.');
@@ -109,7 +122,15 @@ export default function Login({ onLoginSuccess }: LoginProps) {
       localStorage.setItem('milyarder_user', JSON.stringify(data.user));
       onLoginSuccess(data.user);
     } catch (err: any) {
-      setError(err.message || 'Gagal terhubung ke server finansial.');
+      console.error('Login error details:', err);
+      if (err.message.includes('Unexpected token') || err.message.includes('is not valid JSON')) {
+        setError(
+          'Gagal membaca respon server. Mohon pastikan Environment Variables ' +
+          '(SUPABASE_URL dan SUPABASE_ANON_KEY) sudah dikonfigurasi di Vercel Settings.'
+        );
+      } else {
+        setError(err.message || 'Gagal terhubung ke server finansial.');
+      }
     } finally {
       setIsLoading(false);
     }
