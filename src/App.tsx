@@ -1253,8 +1253,8 @@ export default function App() {
         {activeTab === 'analytics' && (
           <div className="flex flex-col gap-6 animate-fade-in">
             <div className="flex flex-col gap-1 text-center md:text-left">
-              <h2 className="text-xl font-black text-white font-mono tracking-tight uppercase">MILYARDERRRRR VISUAL ENGINE 📊</h2>
-              <p className="text-xs text-zinc-500">Visualisasi komparatif multi-dimensi real-time ditenagai Recharts</p>
+              <h2 className="text-xl font-black text-slate-800 font-mono tracking-tight uppercase">MILYARDERRRRR VISUAL ENGINE 📊</h2>
+              <p className="text-xs text-slate-500">Visualisasi komparatif multi-dimensi real-time ditenagai Recharts</p>
             </div>
             
             <WealthCharts
@@ -1270,7 +1270,7 @@ export default function App() {
           <div className="flex flex-col lg:grid lg:grid-cols-12 lg:gap-6 animate-fade-in">
             {/* Title */}
             <div className="lg:col-span-12 flex flex-col gap-1.5">
-              <h2 className="text-xl font-extrabold text-white font-mono tracking-tight uppercase">Aset & Sasaran Target Kekayaan</h2>
+              <h2 className="text-xl font-extrabold text-slate-800 font-mono tracking-tight uppercase">Aset & Sasaran Target Kekayaan</h2>
               <p className="text-xs text-slate-500">Rumus: Kekayaan Bersih = (Kas + Saham + Reksa Dana + Emas + Kripto + Properti) - (Hutang / KPR / PayLater)</p>
             </div>
 
@@ -1334,15 +1334,15 @@ export default function App() {
                 {/* Grid map */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {parsedGoals.map((g) => (
-                    <div key={g.id} className="bg-slate-900/40 border border-slate-800/80 p-4 rounded-2xl flex flex-col gap-2 relative group hover:border-slate-700/80 transition-all">
+                    <div key={g.id} className="bg-white border border-slate-200/90 p-4 rounded-2xl flex flex-col gap-2 relative group hover:border-slate-350 transition-all shadow-sm">
                       <div className="flex justify-between items-start text-xs">
                         <div className="flex flex-col max-w-[80%]">
-                          <span className="font-extrabold text-slate-200 truncate">{g.title}</span>
-                          <span className="text-[9px] text-slate-550 font-mono">Tanggal Target: {g.target_date}</span>
+                          <span className="font-extrabold text-slate-800 truncate">{g.title}</span>
+                          <span className="text-[9px] text-slate-500 font-mono">Tanggal Target: {g.target_date}</span>
                         </div>
                         <button
                           onClick={() => handleGoalDelete(g.id)}
-                          className="p-1 opacity-0 group-hover:opacity-100 hover:text-rose-455 text-slate-550 transition-all cursor-pointer shrink-0"
+                          className="p-1 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-600 transition-all cursor-pointer shrink-0"
                           title="Hapus target"
                         >
                           <Trash2 size={12} />
@@ -1351,21 +1351,21 @@ export default function App() {
 
                       {/* Progress details */}
                       <div className="flex items-end justify-between font-mono text-[10px] mt-2">
-                        <span className="text-slate-450 font-bold">Kemajuan ({g.percent}%)</span>
-                        <span className="text-slate-100 font-extrabold">{formatRupiah(g.current_amount)} / {formatRupiah(g.target_amount)}</span>
+                        <span className="text-slate-500 font-bold">Kemajuan ({g.percent}%)</span>
+                        <span className="font-extrabold text-slate-800">{formatRupiah(g.current_amount)} / {formatRupiah(g.target_amount)}</span>
                       </div>
 
                       {/* Bar */}
-                      <div className="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-850">
+                      <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200/50">
                         <div
                           className="h-full bg-gradient-to-r from-indigo-500 to-teal-500 rounded-full transition-all"
                           style={{ width: `${g.percent}%` }}
                         />
                       </div>
 
-                      <div className="flex items-center justify-between text-[9px] bg-slate-950 p-2 rounded-xl mt-1.5 border border-slate-850/60 font-mono">
+                      <div className="flex items-center justify-between text-[9px] bg-slate-50 p-2 rounded-xl mt-1.5 border border-slate-200 font-mono">
                         <span className="text-slate-500">ESTIMASI SELESAI:</span>
-                        <span className="font-bold text-teal-400">{g.estimatedFinish}</span>
+                        <span className="font-bold text-indigo-600">{g.estimatedFinish}</span>
                       </div>
                     </div>
                   ))}
