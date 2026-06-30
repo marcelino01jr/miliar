@@ -68,13 +68,6 @@ const ai = new Proxy({} as any, {
   }
 });
 
-// ESM/CJS dual target path resolution
-let currentDir = '';
-if (typeof __dirname !== 'undefined') {
-  currentDir = __dirname;
-} else {
-  currentDir = path.dirname(fileURLToPath(new Function('return import.meta.url')()));
-}
 
 // Boot and seed database
 async function initDatabase() {
