@@ -7,7 +7,8 @@ import ws from 'ws';
 import { getSeedData } from './src/utils/seed.js';
 import { WealthData, Transaction, Budget, Goal, Asset, Liability } from './src/types.js';
 import bcrypt from 'bcryptjs';
-import { supabase, ai } from './api/_lib/supabase.js';
+import { createClient } from '@supabase/supabase-js';
+import { GoogleGenAI } from '@google/genai';
 
 
 
@@ -16,7 +17,57 @@ dotenv.config();
 // Fix for Node 20 WebSocket
 (global as any).WebSocket = ws;
 
-// Supabase & Gemini are imported from ./api/_lib/supabase.js
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
+
+let rawSupabase: any;
+if (supabaseUrl && supabaseKey) {
+  try {
+    rawSupabase = createClient(supabaseUrl, supabaseKey, {
+      auth: { persistSession: false },
+    });
+  } catch (e) {
+    console.error('Failed to create Supabase client:', e);
+  }
+}
+
+const supabase = new Proxy({} as any, {
+  get(target, prop) {
+    if (!supabaseUrl || !supabaseKey || !rawSupabase) {
+      throw new Error(
+        'Supabase environment variables are missing or invalid. ' +
+        'Please configure SUPABASE_URL and SUPABASE_ANON_KEY in your Vercel project Settings > Environment Variables.'
+      );
+    }
+    return Reflect.get(rawSupabase, prop);
+  }
+});
+
+const geminiApiKey = process.env.GEMINI_API_KEY;
+let rawAi: any;
+if (geminiApiKey) {
+  try {
+    rawAi = new GoogleGenAI({
+      apiKey: geminiApiKey,
+      httpOptions: {
+        headers: { 'User-Agent': 'aistudio-build' },
+      },
+    });
+  } catch (e) {
+    console.error('Failed to create Gemini AI client:', e);
+  }
+}
+
+const ai = new Proxy({} as any, {
+  get(target, prop) {
+    if (!geminiApiKey || !rawAi) {
+      throw new Error(
+        'Gemini API key is missing. Please configure GEMINI_API_KEY in your Vercel project Settings > Environment Variables.'
+      );
+    }
+    return Reflect.get(rawAi, prop);
+  }
+});
 
 // ESM/CJS dual target path resolution
 let currentDir = '';
