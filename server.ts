@@ -3,12 +3,11 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
-import { GoogleGenAI } from '@google/genai';
-import { createClient } from '@supabase/supabase-js';
 import ws from 'ws';
 import { getSeedData } from './src/utils/seed.js';
 import { WealthData, Transaction, Budget, Goal, Asset, Liability } from './src/types.js';
 import bcrypt from 'bcryptjs';
+import { supabase, ai } from './api/_lib/supabase.js';
 
 
 
@@ -17,12 +16,7 @@ dotenv.config();
 // Fix for Node 20 WebSocket
 (global as any).WebSocket = ws;
 
-// Supabase Init
-const supabaseUrl = process.env.SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_ANON_KEY || '';
-const supabase = createClient(supabaseUrl, supabaseKey, {
-  auth: { persistSession: false }
-});
+// Supabase & Gemini are imported from ./api/_lib/supabase.js
 
 // ESM/CJS dual target path resolution
 let currentDir = '';
@@ -68,15 +62,7 @@ const app = express();
 app.use(express.json());
 app.use('/assets', express.static(path.join(process.cwd(), 'assets')));
 
-// Initialize Gemini Client
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-  httpOptions: {
-    headers: {
-      'User-Agent': 'aistudio-build',
-    }
-  }
-});
+// Gemini Client (ai) is imported from ./api/_lib/supabase.js
 
   // 1. Get entire state
   app.get('/api/wealth', async (req, res) => {
