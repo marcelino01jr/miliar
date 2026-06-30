@@ -1,7 +1,6 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
 import ws from 'ws';
 import { getSeedData } from './src/utils/seed.js';
@@ -655,21 +654,23 @@ Style: Highly motivating, crisp formatting, executive review.`;
   // -----------------------------------------------------------------------------
   if (!process.env.VERCEL) {
     if (process.env.NODE_ENV !== 'production') {
-      createViteServer({
-        server: { middlewareMode: true },
-        appType: 'spa',
-      }).then((vite) => {
-        app.use(vite.middlewares);
+      import('vite').then(({ createServer }) => {
+        createServer({
+          server: { middlewareMode: true },
+          appType: 'spa',
+        }).then((vite) => {
+          app.use(vite.middlewares);
 
-        // Global error handler (registered as final middleware in dev)
-        app.use((err: any, req: any, res: any, next: any) => {
-          console.error(err);
-          res.status(500).json({ error: 'Server internal anomaly' });
-        });
+          // Global error handler (registered as final middleware in dev)
+          app.use((err: any, req: any, res: any, next: any) => {
+            console.error(err);
+            res.status(500).json({ error: 'Server internal anomaly' });
+          });
 
-        const PORT = 3000;
-        app.listen(PORT, '0.0.0.0', () => {
-          console.log(`🚀 MILYARDER Financial Server running securely on http://localhost:${PORT}`);
+          const PORT = 3000;
+          app.listen(PORT, '0.0.0.0', () => {
+            console.log(`🚀 MILYARDER Financial Server running securely on http://localhost:${PORT}`);
+          });
         });
       });
     } else {
